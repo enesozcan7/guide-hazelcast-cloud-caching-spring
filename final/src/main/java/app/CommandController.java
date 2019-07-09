@@ -8,16 +8,25 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.hazelcast.core.HazelcastInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+
+
 @RestController
 public class CommandController {
+
+
 
     @Value("#{environment.MY_POD_NAME}")
     private String podName;
 
-    Map<String,String> keyValueStore = new ConcurrentHashMap<>();
+
+    @Autowired
+    HazelcastInstance hazelcastInstance;
+
 
     private Map<String,String> retrieveMap() {
-        return keyValueStore;
+        return hazelcastInstance.getMap("map");
     }
 
     @RequestMapping("/put")
