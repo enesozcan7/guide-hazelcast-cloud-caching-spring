@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: hazelcast-cloud-spring-statefulset
+  labels:
+    app: hazelcast-cloud-spring
+spec:
+  replicas: 2
+  serviceName: hazelcast-cloud-spring-service
+  selector:
+    matchLabels:
+      app: hazelcast-cloud-spring
+  template:
+    metadata:
+      labels:
+        app: hazelcast-cloud-spring
+    spec:
+      containers:
+        - name: hazelcast-cloud-spring-container
+          image: hazelcast-cloud-spring-demo:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: hz
+              containerPort: 8080
+          env:
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hazelcast-cloud-spring-service
+spec:
+  type: NodePort
+  selector:
+    app: hazelcast-cloud-spring
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 31000

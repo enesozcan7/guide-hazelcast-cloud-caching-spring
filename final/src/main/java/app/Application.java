@@ -1,4 +1,5 @@
-package guides.hazelcast.spring;
+package guides.hazelcast.cloud.spring;
+
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,6 +18,8 @@ import org.springframework.context.annotation.Bean;
 @SpringBootApplication
 @RestController
 public class Application {
+
+
 
     private String CLUSTER_NAME = "null";
     private String CLUSTER_PW = "null";
