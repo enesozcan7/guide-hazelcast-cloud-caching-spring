@@ -1,4 +1,4 @@
-package guides.hazelcast.cloud.spring;
+package java.hazelcast_cloud_spring;
 
 
 import org.springframework.boot.SpringApplication;
@@ -6,13 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.spi.impl.discovery.HazelcastCloudDiscovery;
 import com.hazelcast.client.spi.properties.ClientProperty;
 import com.hazelcast.config.GroupConfig;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.config.JoinConfig;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication

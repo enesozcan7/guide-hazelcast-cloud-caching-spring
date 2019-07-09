@@ -1,4 +1,4 @@
-package guides.hazelcast.cloud.spring;
+package java.hazelcast_cloud_spring;
 
 @SuppressWarnings("unused")
 public class CommandResponse {
