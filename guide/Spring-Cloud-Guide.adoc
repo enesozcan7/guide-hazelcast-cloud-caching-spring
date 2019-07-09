@@ -1,0 +1,344 @@
+:projectid: hazelcast-cloud-caching-spring
+:page-layout: guide
+:page-duration: 15 minutes
+:page-releasedate: 2019-07-09
+:page-description: Explore how to use caching in microservices on Hazelcast Cloud.
+:page-tags: ['Hazelcast Cloud', 'Caching', 'Microservices', 'Kubernetes', 'Containers','Spring Boot' , 'Minikube']
+:page-related-guides: ['docker', 'kubernetes-intro']
+:source-highlighter: prettify
+:page-seo-title: Caching in microservices with Hazelcast Cloud Tutorial
+:page-seo-description: How to use Hazelcast Cloud with microservices
+= Caching Microservices with Hazelcast Cloud in Kubernetes
+
+Use Hazelcast Cloud Caching in Spring Boot based Microservices and deploy to Kubernetes
+
+:minikube-ip: 192.168.99.100
+:kube: Kubernetes
+:project-id: hazelcast-cloud-caching-spring
+:hashtag: #
+:win: WINDOWS
+:mac: MAC
+:linux: LINUX
+:hazelcast: Hazelcast
+:framework: SpringBoot
+:framework-short: cloud-spring
+:github-address: https://github.com/enozcan/guide-kubernetes-caching-hazelcast-spring.git
+:templates-url: https://raw.githubusercontent.com/enozcan/adoc-templates/master
+
+include::{templates-url}/what-will-learn.adoc[]
+
+include::{templates-url}/what-is-hz.adoc[]
+
+include::{templates-url}/what-is-hz-cloud.adoc[]
+
+== Why Spring Boot?
+
+Spring Boot makes it easy to create stand-alone, production-grade Spring based Applications that you can "just run".
+To learn more about Spring Boot, visit http://spring.io/projects/spring-boot
+
+
+include::{templates-url}/prereq.adoc[]
+
+include::{templates-url}/getting-started.adoc[]
+
+
+== Running Spring Application 
+
+The application in initial directory is a basic SpringBoot app having 3 endpoints:
+
+- *"/"* is the homepage returning "Welcome" string only
+- *"/put"* is the page where key and values can be put on a concurrent hash map.
+- *"/get"* is the page where the values in the map can be obtained by keys.
+
+Build the app using Maven in the `initial` directory:
+
+----
+$ > mvn package
+----
+
+Run the application:
+----
+$ > java -jar target/hazelcast-spring-app-0.1.0.jar
+----
+
+
+Now your app is runnning on localhost:5000. You can test by following requests:
+
+----
+$ > curl "localhost:5000"
+$ > curl "localhost:5000/put?key=key1&value=hazelcast"
+$ > curl "localhost:5000/get?key=key1"
+----
+
+This part was an introduction of the applicaiton. You can stop your application by CTRL + C.
+
+== Creating Hazelcast Cloud Account
+
+Create an account and a cluster following the steps in the link. Since we have an app, do not perform the 4th step (installation of example app using Hazelcast Cloud):
+https://docs.cloud.hazelcast.com/docs/getting-started
+
+== Using Hazelcast Cloud
+
+Instead of using a local map field to store key-value pairs in our app, now we will use Hazelcast Cloud which allows us to store this data and can be retrieved from anywhere using the cloud credentials.
+
+Modify Application.java file in such a way:
+
+*Import Packages*
+----
+import com.hazelcast.client.HazelcastClient;
+import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.client.spi.impl.discovery.HazelcastCloudDiscovery;
+import com.hazelcast.client.spi.properties.ClientProperty;
+import com.hazelcast.config.GroupConfig;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.config.JoinConfig;
+import org.springframework.context.annotation.Bean;
+----
+*Create cloud credentials fields and hazelcastConfig bean insinde the class scope:*
+----
+private static ClientConfig config;
+
+private String CLUSTER_NAME = "null";
+private String CLUSTER_PW = "null";
+private String DISCOVERY_TOKEN = "null";
+private String BASE_PROPERTY = "https://coordinator.hazelcast.cloud";
+
+@Bean
+public ClientConfig hazelcastConfig() {
+    ClientConfig config = new ClientConfig();
+    config.setGroupConfig(new GroupConfig(CLUSTER_NAME, CLUSTER_PW));
+    config.setProperty("hazelcast.client.statistics.enabled","true");
+    config.setProperty(ClientProperty.HAZELCAST_CLOUD_DISCOVERY_TOKEN.getName(), DISCOVERY_TOKEN);
+    config.setProperty(HazelcastCloudDiscovery.CLOUD_URL_BASE_PROPERTY.getName(), BASE_PROPERTY);
+    return config;
+}
+----
+
+Now navigate back to Hazelcast Cloud page and click `Configure Client` button on your cluster's page. Replace the "null" fields in Application.java with the values `Cluster group name`,`Cluster group password` and `Cluster discovery token` seen there.
+
+And modify CommandController.java file such that map is not retrieved locally but from HazelcastInstance:
+*Import Packages*
+----
+import com.hazelcast.core.HazelcastInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+----
+*Create @Autowired HazelcastInstance. This instance will be initialized with the config using the @Bean in Application.java. Thus change the _retrieveMap()_ method as well:*
+----
+@Autowired
+HazelcastInstance hazelcastInstance;
+
+
+private Map<String,String> retrieveMap() {
+    return hazelcastInstance.getMap("map");
+}
+----
+
+Finally, update pom.xml:
+*Under dependencies:*
+----
+<dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-enterprise-client</artifactId>
+            <version>3.11.1</version>
+</dependency>
+----
+*Can be anywhere inside the xml file:*
+----
+<repositories>
+        <repository>
+            <id>hazelcast-ee</id>
+            <name>Sonatype Repository</name>
+            <url>https://repository.hazelcast.com/release</url>
+        </repository>
+</repositories>
+----
+
+Now it's ready to use Hazelcast Cloud in SpringBoot application. 
+
+== Trying the cloud facility
+
+Rebuild the app first:
+----
+$ > mvn clean package
+----
+Then run the app on port 5000:
+----
+$ > curl "localhost:5000"
+$ > curl "localhost:5000/put?key=key1&value=hazelcast"
+$ > curl "localhost:5000/get?key=key1"
+----
+
+The third response will return the key inserted by the second one on Hazelcast Cloud.
+Stop your app before going to the next step by *CTRL + C*
+
+== Dockerizing the App
+
+To create the docker image of the application create a Dockerfile under `initial` directory named "Dockerfile" containing the instructions for creating a docker image:
+
+----
+FROM openjdk:8-jdk-alpine
+
+VOLUME /tmp
+
+ARG JAR_FILE=target/hazelcast-cloud-spring-app-0.1.0.jar
+
+ADD ${JAR_FILE} hazelcast-cloud-spring-demo.jar
+
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/hazelcast-cloud-spring-demo.jar"]
+----
+
+
+Then create the image:
+----
+$ > docker build -t hazelcast-cloud-spring-demo .
+----
+
+Now, the image must be seen among the docker images:
+----
+$ > docker images
+
+REPOSITORY                           TAG                 IMAGE ID            CREATED             SIZE
+hazelcast-cloud-spring-demo          latest              bda844bfb565        2 seconds ago       134MB
+openjdk                              8-jdk-alpine        a3562aa0b991        5 weeks ago         105MB
+k8s.gcr.io/kube-proxy-amd64          v1.10.11            7387003276ac        6 months ago        98.3MB
+k8s.gcr.io/kube-apiserver-amd64      v1.10.11            e851a7aeb6e8        6 months ago        228MB
+----
+
+== Running the app in container
+
+Now that the Docker image is ready, check if the image runs properly:
+
+----
+$ > docker run -p 5000:8080 hazelcast-cloud-spring-demo
+----
+
+Test the app on the port 5000:
+----
+$ > curl "localhost:5000"
+$ > curl "localhost:5000/get?key=key1"
+----
+
+As you see, the request for "key1" returns the value (hazelcast) inserted before.
+
+To stop the container, get the container ID first:
+----
+$ > docker ps
+----
+Then find the application's container ID and stop the container:
+----
+$ > docker stop [CONTAINER-ID]
+----
+
+include::{templates-url}/start-cluster.adoc[]
+
+include::{templates-url}/validate-kube-env.adoc[]
+
+After you're sure that a master node is ready, create kubernetes.yaml under `initial` directory with the same content in the `final/kubernetes.yaml` file.
+
+This file defines two {kube} resources: one statefulset and one service. 
+StatefulSet is preferred solution for Hazelcast because it enables controlled scale out/in of your microservices 
+for easy data distribution. To learn more about StatefulSet, you can visit Kubernetes documentation
+https://kubernetes.io/docs/tutorials/stateful-application/basic-stateful-set/
+
+By default, we create 2 replicas of `hazelcast-cloud-spring` microservice behind the `hazelcast-cloud-spring` which forwards requests to one of the pods available in the kubernetes cluster.
+
+`MY_POD_NAME` is an environment variable made available to the pods so that each microservice knows which pod they are in.
+This is going to be used in this guide in order to show which pod is responding to the http request.
+
+Run the following command to deploy the resources as defined in kubernetes.yaml:
+----
+$ > kubectl apply -f kubernetes.yaml
+----
+Run the following command to check the status of your pods:
+----
+$ > kubectl get pods
+----
+
+You'll see an output similar to the following if all the pods are healthy and running:
+----
+NAME                             READY     STATUS    RESTARTS   AGE
+hazelcast-cloud-spring-statefulset-0   1/1       Running   0          7s
+hazelcast-cloud-spring-statefulset-1   1/1       Running   0          5s
+----
+
+Send request to port :31000 and see the pods responding.
+----
+$ > curl localhost:31000
+----
+
+And add a value to the map and then get the value:
+----
+
+$ > curl "localhost:31000/put?key=key2&value=kube_value"
+
+{"value":"kube_value","podName":"hazelcast-cloud-spring-statefulset-1"} 
+
+$ > while true; do curl localhost:31000/get?key=key2;echo; sleep 2; done
+	
+{"value":"kube_value","podName":"hazelcast-cloud-spring-statefulset-1"} 
+{"value":"kube_value","podName":"hazelcast-cloud-spring-statefulset-0"} 
+{"value":"kube_value","podName":"hazelcast-cloud-spring-statefulset-1"} 
+{"value":"kube_value","podName":"hazelcast-cloud-spring-statefulset-0"} 
+----
+
+As can be seen, data is coming from Hazelcast Cloud hence it's shared between nodes. You can kill pods by:
+----
+$ > kubectl delete -f kubernetes.yaml
+----
+
+== Scaling with Hazelcast
+
+Scale the cluster with one more pod and see that you still retrieve the shared data.
+
+[role='command']
+```
+$ > kubectl scale statefulset hazelcast-cloud-spring-statefulset --replicas=3
+```
+
+Run following command to see the latest status of the pods
+[role='command']
+```
+$ > kubectl get pods
+```
+
+As you can see, a new pod `hazelcast-cloud-spring-statefulset-2` has joined to the cluster.
+[source, role="no_copy"]
+----
+NAME                              READY     STATUS    RESTARTS   AGE
+hazelcast-cloud-spring-statefulset-0   1/1       Running   0          8m
+hazelcast-cloud-spring-statefulset-1   1/1       Running   0          8m
+hazelcast-cloud-spring-statefulset-2   1/1       Running   0          31s
+----
+
+Run the following command again to see the output
+[role='command']
+```
+$ > while true; do curl http://localhost:31000/get?key=key1;echo; sleep 2; done
+```
+----
+{"value":"kube_value","podName":"hazelcast-cloud-spring-statefulset-2"}
+{"value":"kube_value","podName":"hazelcast-cloud-spring-statefulset-0"}
+{"value":"kube_value","podName":"hazelcast-cloud-spring-statefulset-2"}
+{"value":"kube_value","podName":"hazelcast-cloud-spring-statefulset-1"}
+----
+
+As you can see, `hazelcast-cloud-caching-statefulset-2` is returning correct data.
+
+
+== Testing microservices that are running on {kube}
+
+Create a testing class under `initial/src/test/java/it/io/spring/guides/hazelcast-cloud/`
+named `HazelcastCloudIT.java` .The contents of the test file is available under `final` directoy.
+
+
+****
+****
+****
+****
+****
+****
+
+
+include::{templates-url}/minikube-teardown.adoc[]
+
+include::{templates-url}/youre-done-cloud.adoc[]
