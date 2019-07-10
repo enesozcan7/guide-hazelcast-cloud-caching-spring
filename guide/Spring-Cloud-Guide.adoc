@@ -327,17 +327,35 @@ As you can see, `hazelcast-cloud-caching-statefulset-2` is returning correct dat
 
 == Testing microservices that are running on {kube}
 
-Create a testing class under `initial/src/test/java/it/io/spring/guides/hazelcast-cloud/`
-named `HazelcastCloudIT.java` .The contents of the test file is available under `final` directoy.
+Create a testing class under `initial/src/test/java/hazelcast_cloud_spring/`
+named `HazelcastCloudIT.java`. The contents of the test file is available under `final` directoy.
 
+The test makes sure that a key-pair value is instered using Hazelcast Cloud and different pods put and fetch key-value pairs properly.
 
-****
-****
-****
-****
-****
-****
+The first test checks if Hazelcast Cloud connection works. The second one checks if different pods put and fetch key-value pairs properly.
 
+In order to run integration tests, you must have a running hazelcast-cloud-spring microservices in minikube environment. As you have gone through all previous steps, you already have it.
+
+Navigate back to `initial` directory and run the test:
+
+----
+$ > mvn -Dtest=HazelcastCachingIT test 
+----
+
+If the tests pass, you’ll see a similar output to the following:
+
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.494 s - in hazelcast_cloud_spring.HazelcastCloudIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  14.147 s
+[INFO] Finished at: 2019-07-10T10:11:58+03:00
+[INFO] ------------------------------------------------------------------------
 
 include::{templates-url}/minikube-teardown.adoc[]
 
