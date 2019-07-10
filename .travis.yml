@@ -1,15 +1,18 @@
 language: java
+services: docker
 install:
 - cd initial
-- mvn package
-- java -jar target/hazelcast-cloud-spring-app-0.1.0.jar &
-- while true; do  response=$(curl --write-out %{http_code} --silent --output /dev/null "http://localhost:8080"); if [ $response -eq 200 ]; then break; fi; echo "waiting for app to be started"; sleep 5; done;
+- mvn package 1>/dev/null
+- cp ../final/Dockerfile .
+- docker build -t hazelcast-cloud-spring-demo . 1>/dev/null
+- docker run -d -p 5000:8080 hazelcast-cloud-spring-demo 
+- while true; do  response=$(curl --write-out %{http_code} --silent --output /dev/null "http://localhost:5000"); if [ $response -eq 200 ]; then break; fi; echo "waiting for app to be started"; sleep 5; done;
 script:
 # Since no hazelcast cloud account is registered, only build and responses are tested.
-- response=$(curl --write-out %{http_code} --silent --output /dev/null localhost:8080)
+- response=$(curl --write-out %{http_code} --silent --output /dev/null localhost:5000)
 - if [ "$response" == "200" ]; then true; else false; fi
-- response=$(curl --write-out %{http_code} --silent --output /dev/null "localhost:8080/put?key=1&value=1")
+- response=$(curl --write-out %{http_code} --silent --output /dev/null "localhost:5000/put?key=1&value=1")
 - if [ "$response" == "200" ]; then true; else false; fi
-- response=$(curl --write-out %{http_code} --silent --output /dev/null "localhost:8080/get?key=1")
+- response=$(curl --write-out %{http_code} --silent --output /dev/null "localhost:5000/get?key=1")
 - if [ "$response" == "200" ]; then true; else false; fi
 
