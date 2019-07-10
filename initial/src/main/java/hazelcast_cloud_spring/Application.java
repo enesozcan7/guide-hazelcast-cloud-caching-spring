@@ -1,4 +1,4 @@
-package guides.hazelcast.cloud.spring;
+package hazelcast_cloud_spring;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

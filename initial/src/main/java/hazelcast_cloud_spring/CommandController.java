@@ -1,5 +1,4 @@
-package guides.hazelcast.cloud.spring;
-
+package hazelcast_cloud_spring;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
