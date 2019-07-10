@@ -1,4 +1,4 @@
-package guides.hazelcast.cloud.spring;
+package hazelcast_cloud_spring;
 
 
 import org.springframework.boot.SpringApplication;
@@ -6,13 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.spi.impl.discovery.HazelcastCloudDiscovery;
 import com.hazelcast.client.spi.properties.ClientProperty;
 import com.hazelcast.config.GroupConfig;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.config.JoinConfig;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
@@ -21,9 +18,9 @@ public class Application {
 
 
 
-    private String CLUSTER_NAME = "null";
-    private String CLUSTER_PW = "null";
-    private String DISCOVERY_TOKEN = "null";
+    private String CLUSTER_NAME = "spring-cloud";
+    private String CLUSTER_PW = "a3c102a326f140859ce2ad322507aa88";
+    private String DISCOVERY_TOKEN = "VXFG6tVKccmBtrIeGOhkNzQmMqr4V5qL7CGL1WDWJFh9ydeojR";
     private String BASE_PROPERTY = "https://coordinator.hazelcast.cloud";
 
     private static ClientConfig config;
