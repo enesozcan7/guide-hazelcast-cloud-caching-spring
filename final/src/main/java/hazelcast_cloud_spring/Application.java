@@ -18,9 +18,9 @@ public class Application {
 
 
 
-    private String CLUSTER_NAME = "spring-cloud";
-    private String CLUSTER_PW = "a3c102a326f140859ce2ad322507aa88";
-    private String DISCOVERY_TOKEN = "VXFG6tVKccmBtrIeGOhkNzQmMqr4V5qL7CGL1WDWJFh9ydeojR";
+    private String CLUSTER_NAME = "null";
+    private String CLUSTER_PW = "null";
+    private String DISCOVERY_TOKEN = "null";
     private String BASE_PROPERTY = "https://coordinator.hazelcast.cloud";
 
     private static ClientConfig config;
