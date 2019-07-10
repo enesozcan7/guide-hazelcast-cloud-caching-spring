@@ -22,7 +22,7 @@ Use Hazelcast Cloud Caching in Spring Boot based Microservices and deploy to Kub
 :hazelcast: Hazelcast
 :framework: SpringBoot
 :framework-short: cloud-spring
-:github-address: https://github.com/enozcan/guide-kubernetes-caching-hazelcast-spring.git
+:github-address: https://github.com/enozcan/guide-hazelcast-cloud-caching-spring.git
 :templates-url: https://raw.githubusercontent.com/enozcan/adoc-templates/master
 
 include::{templates-url}/what-will-learn.adoc[]
@@ -58,16 +58,16 @@ $ > mvn package
 
 Run the application:
 ----
-$ > java -jar target/hazelcast-spring-app-0.1.0.jar
+$ > java -jar target/hazelcast-cloud-spring-app-0.1.0.jar
 ----
 
 
-Now your app is runnning on localhost:5000. You can test by following requests:
+Now your app is runnning on localhost:8080. You can test by following requests:
 
 ----
-$ > curl "localhost:5000"
-$ > curl "localhost:5000/put?key=key1&value=hazelcast"
-$ > curl "localhost:5000/get?key=key1"
+$ > curl "localhost:8080"
+$ > curl "localhost:8080/put?key=key1&value=hazelcast"
+$ > curl "localhost:8080/get?key=key1"
 ----
 
 This part was an introduction of the applicaiton. You can stop your application by CTRL + C.
@@ -157,19 +157,20 @@ Now it's ready to use Hazelcast Cloud in SpringBoot application.
 
 == Trying the cloud facility
 
-Rebuild the app first:
+Rebuild the app and run:
 ----
 $ > mvn clean package
+$ > java -jar target/hazelcast-cloud-spring-app-0.1.0.jar
 ----
-Then run the app on port 5000:
+Then run the app on port 8080:
 ----
-$ > curl "localhost:5000"
-$ > curl "localhost:5000/put?key=key1&value=hazelcast"
-$ > curl "localhost:5000/get?key=key1"
+$ > curl "localhost:8080"
+$ > curl "localhost:8080/put?key=key1&value=hazelcast"
+$ > curl "localhost:8080/get?key=key1"
 ----
 
 The third response will return the key inserted by the second one on Hazelcast Cloud.
-Stop your app before going to the next step by *CTRL + C*
+Shut down your app before going to the next step by *CTRL + C*
 
 == Dockerizing the App
 
@@ -212,7 +213,7 @@ Now that the Docker image is ready, check if the image runs properly:
 $ > docker run -p 5000:8080 hazelcast-cloud-spring-demo
 ----
 
-Test the app on the port 5000:
+After you see the log  `"g.hazelcast.cloud.spring.Application : Started Application in 17.196 seconds (JVM running for 19.193)"`, Test the app on the port 5000:
 ----
 $ > curl "localhost:5000"
 $ > curl "localhost:5000/get?key=key1"
@@ -261,6 +262,12 @@ hazelcast-cloud-spring-statefulset-0   1/1       Running   0          7s
 hazelcast-cloud-spring-statefulset-1   1/1       Running   0          5s
 ----
 
+Check pod logs if they're ready:
+----
+$ > kubectl logs hazelcast-cloud-spring-statefulset-0
+$ > kubectl logs hazelcast-cloud-spring-statefulset-1
+----
+
 Send request to port :31000 and see the pods responding.
 ----
 $ > curl localhost:31000
@@ -281,10 +288,7 @@ $ > while true; do curl localhost:31000/get?key=key2;echo; sleep 2; done
 {"value":"kube_value","podName":"hazelcast-cloud-spring-statefulset-0"} 
 ----
 
-As can be seen, data is coming from Hazelcast Cloud hence it's shared between nodes. You can kill pods by:
-----
-$ > kubectl delete -f kubernetes.yaml
-----
+As can be seen, data is coming from Hazelcast Cloud hence it's shared between nodes.
 
 == Scaling with Hazelcast
 
@@ -324,7 +328,6 @@ $ > while true; do curl http://localhost:31000/get?key=key1;echo; sleep 2; done
 
 As you can see, `hazelcast-cloud-caching-statefulset-2` is returning correct data.
 
-
 == Testing microservices that are running on {kube}
 
 Create a testing class under `initial/src/test/java/hazelcast_cloud_spring/`
@@ -339,7 +342,7 @@ In order to run integration tests, you must have a running hazelcast-cloud-sprin
 Navigate back to `initial` directory and run the test:
 
 ----
-$ > mvn -Dtest=HazelcastCachingIT test 
+$ > mvn -Dtest=HazelcastCloudIT test 
 ----
 
 If the tests pass, you’ll see a similar output to the following:
