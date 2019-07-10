@@ -1,3 +1,4 @@
 .DS_Store
 final/target/*
 initial/target/*
+initial/.idea/*
